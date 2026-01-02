@@ -30,3 +30,18 @@ fun DetailSiswa.toDataSiswa(): Siswa = Siswa(
     alamat = alamat,
     telpon = telpon
 )
+
+// Mengubah data Firebase (Siswa) menjadi state UI (UIStateSiswa)
+// Ini memperbaiki error pada image_ec20f7.jpg
+fun Siswa.toUiStateSiswa(isEntryValid: Boolean = false): UIStateSiswa = UIStateSiswa(
+    detailSiswa = this.toDetailSiswa(),
+    isEntryValid = isEntryValid
+)
+
+// Mengubah data Firebase (Siswa) menjadi DetailSiswa
+fun Siswa.toDetailSiswa(): DetailSiswa = DetailSiswa(
+    id = id,
+    nama = nama,
+    alamat = alamat,
+    telpon = telpon
+)
