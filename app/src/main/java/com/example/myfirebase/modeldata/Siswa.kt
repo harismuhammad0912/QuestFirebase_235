@@ -20,3 +20,13 @@ data class DetailSiswa(
     val alamat: String = "",
     val telpon: String = ""
 )
+
+/* FUNGSI MAPPER (KONVERSI) - SANGAT PENTING */
+
+// Mengubah input form (DetailSiswa) menjadi data Firebase (Siswa)
+fun DetailSiswa.toDataSiswa(): Siswa = Siswa(
+    id = id,
+    nama = nama,
+    alamat = alamat,
+    telpon = telpon
+)
