@@ -7,16 +7,20 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.myfirebase.modeldata.Siswa
 import com.example.myfirebase.repositori.RepositorySiswa
+import kotlinx.coroutines.flow.catch
+import kotlinx.coroutines.flow.onStart
 import kotlinx.coroutines.launch
-import java.io.IOException
 
+// Status UI untuk memantau kondisi data (Loading, Sukses, atau Error)
 sealed interface StatusUiSiswa {
-    data class Success(val siswa: List<Siswa> = listOf()) : StatusUiSiswa
+    data class Success(val siswa: List<Siswa>) : StatusUiSiswa
     object Error : StatusUiSiswa
     object Loading : StatusUiSiswa
 }
 
-class HomeViewModel(private val repositorySiswa: RepositorySiswa): ViewModel() {
+class HomeViewModel(private val repositorySiswa: RepositorySiswa) : ViewModel() {
+
+    // State yang akan dipantau oleh HomeScreen
     var statusUiSiswa: StatusUiSiswa by mutableStateOf(StatusUiSiswa.Loading)
         private set
 
@@ -26,14 +30,17 @@ class HomeViewModel(private val repositorySiswa: RepositorySiswa): ViewModel() {
 
     fun loadSiswa() {
         viewModelScope.launch {
-            statusUiSiswa = StatusUiSiswa.Loading
-            statusUiSiswa = try {
-                StatusUiSiswa.Success(repositorySiswa.getDataSiswa())
-            } catch (e: IOException) {
-                StatusUiSiswa.Error
-            } catch (e: Exception) {
-                StatusUiSiswa.Error
-            }
+            // Mengambil data real-time dari repository
+            repositorySiswa.getAllSiswa()
+                .onStart {
+                    statusUiSiswa = StatusUiSiswa.Loading
+                }
+                .catch {
+                    statusUiSiswa = StatusUiSiswa.Error
+                }
+                .collect { daftarSiswa ->
+                    statusUiSiswa = StatusUiSiswa.Success(daftarSiswa)
+                }
         }
     }
 }

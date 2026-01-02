@@ -12,9 +12,9 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.nestedscroll.nestedScroll
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.myfirebase.R
 import com.example.myfirebase.modeldata.Siswa
 import com.example.myfirebase.view.route.DestinasiHome
@@ -28,7 +28,7 @@ fun HomeScreen(
     navigateToItemEntry: () -> Unit,
     onDetailClick: (String) -> Unit,
     modifier: Modifier = Modifier,
-    viewModel: HomeViewModel = androidx.lifecycle.viewmodel.compose.viewModel(factory = PenyediaViewModel.Factory)
+    viewModel: HomeViewModel = viewModel(factory = PenyediaViewModel.Factory)
 ) {
     val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior()
     Scaffold(
@@ -74,12 +74,12 @@ fun HomeBody(
         is StatusUiSiswa.Success -> {
             if (statusUiSiswa.siswa.isEmpty()) {
                 Box(modifier = modifier, contentAlignment = Alignment.Center) {
-                    Text(text = "Tidak ada data siswa")
+                    Text(text = stringResource(R.string.deskripsi_no_item))
                 }
             } else {
                 ListSiswa(
                     itemSiswa = statusUiSiswa.siswa,
-                    onSiswaClick = { onSiswaClick(it.id.toString()) },
+                    onSiswaClick = { onSiswaClick(it.id) },
                     modifier = modifier
                 )
             }
@@ -100,6 +100,7 @@ fun ListSiswa(
                 siswa = person,
                 modifier = Modifier
                     .padding(8.dp)
+                    .fillMaxWidth()
                     .clickable { onSiswaClick(person) }
             )
         }
@@ -119,10 +120,11 @@ fun SiswaCard(
             modifier = Modifier.padding(16.dp),
             verticalArrangement = Arrangement.spacedBy(8.dp)
         ) {
-            Row(modifier = Modifier.fillMaxWidth()) {
+            Row(modifier = Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
                 Text(text = siswa.nama, style = MaterialTheme.typography.titleLarge)
                 Spacer(Modifier.weight(1f))
-                Icon(imageVector = Icons.Default.Phone, contentDescription = null)
+                Icon(imageVector = Icons.Default.Phone, contentDescription = null, modifier = Modifier.size(18.dp))
+                Spacer(Modifier.width(4.dp))
                 Text(text = siswa.telpon, style = MaterialTheme.typography.titleMedium)
             }
             Text(text = siswa.alamat, style = MaterialTheme.typography.titleMedium)
@@ -140,6 +142,6 @@ fun OnLoading(modifier: Modifier = Modifier) {
 @Composable
 fun OnError(modifier: Modifier = Modifier) {
     Box(modifier = modifier, contentAlignment = Alignment.Center) {
-        Text(text = "Terjadi Kesalahan")
+        Text(text = stringResource(R.string.gagal))
     }
 }

@@ -9,17 +9,20 @@ import com.example.myfirebase.modeldata.UIStateSiswa
 import com.example.myfirebase.modeldata.toDataSiswa
 import com.example.myfirebase.repositori.RepositorySiswa
 
-class EntryViewModel(private val repositorySiswa: RepositorySiswa): ViewModel() {
+class EntryViewModel(private val repositorySiswa: RepositorySiswa) : ViewModel() {
+
+    // State untuk menampung input dari form Tambah Siswa
     var uiStateSiswa by mutableStateOf(UIStateSiswa())
         private set
 
-    /* Fungsi untuk memvalidasi input */
+    /* Fungsi untuk memvalidasi apakah semua kolom sudah diisi */
     private fun validasiInput(uiState: DetailSiswa = uiStateSiswa.detailSiswa): Boolean {
         return with(uiState) {
             nama.isNotBlank() && alamat.isNotBlank() && telpon.isNotBlank()
         }
     }
 
+    // Memperbarui state setiap kali user mengetik di form
     fun updateUiState(detailSiswa: DetailSiswa) {
         uiStateSiswa = UIStateSiswa(
             detailSiswa = detailSiswa,
@@ -27,10 +30,11 @@ class EntryViewModel(private val repositorySiswa: RepositorySiswa): ViewModel() 
         )
     }
 
-    /* Fungsi untuk menyimpan data yang di-entry */
+    /* Fungsi untuk menyimpan data ke Firebase */
     suspend fun addSiswa() {
         if (validasiInput()) {
-            repositorySiswa.postDataSiswa(uiStateSiswa.detailSiswa.toDataSiswa())
+            // Menggunakan insertSiswa agar cocok dengan RepositorySiswa.kt
+            repositorySiswa.insertSiswa(uiStateSiswa.detailSiswa.toDataSiswa())
         }
     }
 }
