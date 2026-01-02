@@ -12,3 +12,10 @@ interface RepositorySiswa {
 
     // Fungsi untuk menambah data
     suspend fun insertSiswa(siswa: Siswa)
+
+    // Fungsi ini yang dicari EditViewModel (HARUS ADA)
+    suspend fun updateSiswa(id: String, siswa: Siswa)
+
+    // Fungsi untuk menghapus data
+    suspend fun deleteSiswa(id: String)
+}
