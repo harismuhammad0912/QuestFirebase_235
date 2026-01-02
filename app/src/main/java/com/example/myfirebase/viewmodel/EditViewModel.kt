@@ -35,3 +35,34 @@ class EditViewModel(
                 .toUiStateSiswa()
         }
     }
+
+    /* Fungsi untuk memvalidasi input agar tidak kosong */
+    private fun validasiInput(uiState: DetailSiswa = siswaUiState.detailSiswa): Boolean {
+        return with(uiState) {
+            nama.isNotBlank() && alamat.isNotBlank() && telpon.isNotBlank()
+        }
+    }
+
+    // Fungsi untuk mengupdate state saat user mengetik di TextField
+    fun updateUiState(detailSiswa: DetailSiswa) {
+        siswaUiState = UIStateSiswa(
+            detailSiswa = detailSiswa,
+            isEntryValid = validasiInput(detailSiswa)
+        )
+    }
+
+    /* Fungsi untuk memperbarui data ke Firestore */
+    suspend fun updateSiswa() {
+        if (validasiInput()) {
+            try {
+                // Pastikan urutan parameter sesuai dengan RepositorySiswa: (ID, Data)
+                repositorySiswa.updateSiswa(
+                    id = _siswaId,
+                    siswa = siswaUiState.detailSiswa.toDataSiswa()
+                )
+            } catch (e: Exception) {
+                e.printStackTrace()
+            }
+        }
+    }
+}
