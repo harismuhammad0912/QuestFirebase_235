@@ -9,12 +9,3 @@ import com.example.myfirebase.AplikasiDataSiswa
 
 object PenyediaViewModel {
     val Factory = viewModelFactory {
-        initializer { HomeViewModel(siswaApp().container.repositorySiswa) }
-        initializer { EntryViewModel(siswaApp().container.repositorySiswa) }
-        initializer { DetailViewModel(createSavedStateHandle(), siswaApp().container.repositorySiswa) }
-        initializer { EditViewModel(createSavedStateHandle(), siswaApp().container.repositorySiswa) }
-    }
-}
-
-fun CreationExtras.siswaApp(): AplikasiDataSiswa =
-    (this[ViewModelProvider.AndroidViewModelFactory.APPLICATION_KEY] as AplikasiDataSiswa)
