@@ -28,4 +28,11 @@ fun HostNavigasi(
         composable(DestinasiEntry.route) {
             EntrySiswaScreen(navigateBack = { navController.popBackStack() })
         }
-
+        composable(
+            route = DestinasiDetail.routeWithArgs,
+            arguments = listOf(navArgument(DestinasiDetail.itemIdArg) { type = NavType.StringType })
+        ) {
+            DetailScreen(
+                navigateToEditItem = { navController.navigate("${DestinasiEdit.route}/$it") },
+                navigateBack = { navController.popBackStack() }
+            )
