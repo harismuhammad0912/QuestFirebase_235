@@ -23,28 +23,3 @@ fun HostNavigasi(
             HomeScreen(
                 navigateToItemEntry = { navController.navigate(DestinasiEntry.route) },
                 onDetailClick = { navController.navigate("${DestinasiDetail.route}/$it") }
-            )
-        }
-        composable(DestinasiEntry.route) {
-            EntrySiswaScreen(navigateBack = { navController.popBackStack() })
-        }
-        composable(
-            route = DestinasiDetail.routeWithArgs,
-            arguments = listOf(navArgument(DestinasiDetail.itemIdArg) { type = NavType.StringType })
-        ) {
-            DetailScreen(
-                navigateToEditItem = { navController.navigate("${DestinasiEdit.route}/$it") },
-                navigateBack = { navController.popBackStack() }
-            )
-        }
-        composable(
-            route = DestinasiEdit.routeWithArgs,
-            arguments = listOf(navArgument(DestinasiEdit.itemIdArg) { type = NavType.StringType })
-        ) {
-            EditScreen(
-                navigateBack = { navController.popBackStack() },
-                onNavigateUp = { navController.navigateUp() }
-            )
-        }
-    }
-}
