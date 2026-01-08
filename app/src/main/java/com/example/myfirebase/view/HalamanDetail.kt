@@ -69,3 +69,68 @@ fun DetailScreen(
                     Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                         Text(text = "Gagal memuat data.")
                     }
+                }
+                is StatusUIDetail.Success -> {
+                    // 1. Tampilan Card Data Siswa
+                    ItemDetailCard(
+                        siswa = uiState.siswa,
+                        modifier = Modifier.fillMaxWidth()
+                    )
+
+                    // 2. Tombol Hapus
+                    OutlinedButton(
+                        onClick = { deleteConfirmationRequired = true },
+                        modifier = Modifier.fillMaxWidth(),
+                        colors = ButtonDefaults.outlinedButtonColors(contentColor = Color.Red)
+                    ) {
+                        Text("Hapus")
+                    }
+
+                    // 3. Dialog Konfirmasi Hapus
+                    if (deleteConfirmationRequired) {
+                        DeleteConfirmationDialog(
+                            onDeleteConfirm = {
+                                deleteConfirmationRequired = false
+                                coroutineScope.launch {
+                                    viewModel.deleteSiswa()
+                                    navigateBack()
+                                }
+                            },
+                            onDeleteCancel = { deleteConfirmationRequired = false }
+                        )
+                    }
+                }
+            }
+        }
+    }
+}
+
+@Composable
+fun ItemDetailCard(
+    siswa: Siswa,
+    modifier: Modifier = Modifier
+) {
+    Card(
+        modifier = modifier,
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.2f)
+        )
+    ) {
+        Column(
+            modifier = Modifier.padding(16.dp),
+            verticalArrangement = Arrangement.spacedBy(12.dp)
+        ) {
+            ItemDetailRow(label = "Nama Siswa :", value = siswa.nama)
+            ItemDetailRow(label = "Alamat Siswa :", value = siswa.alamat)
+            ItemDetailRow(label = "Telpon Siswa :", value = siswa.telpon)
+        }
+    }
+}
+
+@Composable
+fun ItemDetailRow(label: String, value: String, modifier: Modifier = Modifier) {
+    Row(modifier = modifier.fillMaxWidth()) {
+        Text(text = label, fontWeight = FontWeight.Bold)
+        Spacer(modifier = Modifier.weight(1f))
+        Text(text = value, fontWeight = FontWeight.Bold)
+    }
