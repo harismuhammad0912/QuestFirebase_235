@@ -134,3 +134,19 @@ fun ItemDetailRow(label: String, value: String, modifier: Modifier = Modifier) {
         Spacer(modifier = Modifier.weight(1f))
         Text(text = value, fontWeight = FontWeight.Bold)
     }
+}
+
+@Composable
+private fun DeleteConfirmationDialog(
+    onDeleteConfirm: () -> Unit,
+    onDeleteCancel: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    AlertDialog(
+        onDismissRequest = { /* Do nothing */ },
+        title = { Text("Perhatian !") },
+        text = { Text("Apakah yakin akan menghapus ini ?") },
+        modifier = modifier,
+        dismissButton = {
+            TextButton(onClick = onDeleteCancel) {
+
