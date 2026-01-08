@@ -1,43 +1,46 @@
 package com.example.myfirebase.viewmodel
 
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.myfirebase.modeldata.Siswa
 import com.example.myfirebase.repositori.RepositorySiswa
-import kotlinx.coroutines.flow.SharingStarted
-import kotlinx.coroutines.flow.StateFlow
+import com.example.myfirebase.view.route.DestinasiDetail
 import kotlinx.coroutines.flow.filterNotNull
-import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
+
+sealed interface StatusUIDetail {
+    data class Success(val siswa: Siswa) : StatusUIDetail
+    object Error : StatusUIDetail
+    object Loading : StatusUIDetail
+}
 
 class DetailViewModel(
     savedStateHandle: SavedStateHandle,
     private val repositorySiswa: RepositorySiswa
 ) : ViewModel() {
 
-    // Mengambil ID siswa dari navigasi
-    private val siswaId: String = checkNotNull(savedStateHandle["idSiswa"])
+    private val idSiswa: String = checkNotNull(savedStateHandle[DestinasiDetail.itemIdArg])
 
-    // Menampilkan data siswa secara realtime dari Firebase
-    val uiState: StateFlow<Siswa> = repositorySiswa.getSiswaById(siswaId)
-        .filterNotNull()
-        .stateIn(
-            scope = viewModelScope,
-            started = SharingStarted.WhileSubscribed(5000),
-            initialValue = Siswa() // Pastikan model Siswa punya nilai default
-        )
+    var statusUIDetail: StatusUIDetail by mutableStateOf(StatusUIDetail.Loading)
+        private set
 
-    /* Fungsi untuk menghapus data siswa berdasarkan ID */
-    fun deleteSiswa() {
+    init { getSatuSiswa() }
+
+    fun getSatuSiswa() {
         viewModelScope.launch {
             try {
-                // Perbaikan: Mengirimkan ID (String), bukan objek Siswa
-                // Ini memperbaiki error pada image_ec1192.jpg
-                repositorySiswa.deleteSiswa(siswaId)
-            } catch (e: Exception) {
-                // Log error jika diperlukan
-            }
+                val siswa = repositorySiswa.getSiswaById(idSiswa).filterNotNull().first()
+                statusUIDetail = StatusUIDetail.Success(siswa)
+            } catch (e: Exception) { statusUIDetail = StatusUIDetail.Error }
         }
+    }
+
+    suspend fun deleteSiswa() {
+        repositorySiswa.deleteSiswa(idSiswa)
     }
 }

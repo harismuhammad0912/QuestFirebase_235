@@ -1,20 +1,22 @@
 package com.example.myfirebase.view
 
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.FloatingActionButton
-import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
+import androidx.compose.foundation.layout.*
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Edit
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
-import com.example.myfirebase.view.route.DestinasiDetail
-import com.example.myfirebase.viewmodel.DetailViewModel
-import com.example.myfirebase.viewmodel.PenyediaViewModel
+import com.example.myfirebase.modeldata.Siswa
+import com.example.myfirebase.viewmodel.*
+import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -24,36 +26,136 @@ fun DetailScreen(
     modifier: Modifier = Modifier,
     viewModel: DetailViewModel = viewModel(factory = PenyediaViewModel.Factory)
 ) {
-    // Mengambil status UI dari ViewModel secara real-time
-    val uiState = viewModel.uiState.collectAsState()
+    val uiState = viewModel.statusUIDetail
+    val coroutineScope = rememberCoroutineScope()
+
+    // State untuk mengontrol tampilan Dialog Konfirmasi
+    var deleteConfirmationRequired by remember { mutableStateOf(false) }
 
     Scaffold(
         topBar = {
-            // Memanggil SiswaTopAppBar yang sudah Anda buat sebelumnya
             SiswaTopAppBar(
-                title = stringResource(DestinasiDetail.titleRes),
+                title = "Detail Siswa",
                 canNavigateBack = true,
                 navigateUp = navigateBack
             )
         },
         floatingActionButton = {
-            // Tombol Edit yang mengirimkan ID siswa ke navigasi
-            FloatingActionButton(
-                onClick = { navigateToEditItem(uiState.value.id) }
-            ) {
-                Text(text = "Edit")
+            if (uiState is StatusUIDetail.Success) {
+                FloatingActionButton(
+                    onClick = { navigateToEditItem(uiState.siswa.id) },
+                    shape = MaterialTheme.shapes.medium,
+                    modifier = Modifier.padding(16.dp)
+                ) {
+                    Icon(imageVector = Icons.Default.Edit, contentDescription = "Edit Siswa")
+                }
             }
         }
     ) { innerPadding ->
-        // Menampilkan data siswa yang diambil dari Firebase
         Column(
             modifier = modifier
                 .padding(innerPadding)
-                .padding(16.dp)
+                .fillMaxSize()
+                .padding(16.dp),
+            verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
-            Text(text = "Nama: ${uiState.value.nama}")
-            Text(text = "Alamat: ${uiState.value.alamat}")
-            Text(text = "Telepon: ${uiState.value.telpon}")
+            when (uiState) {
+                is StatusUIDetail.Loading -> {
+                    Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                        CircularProgressIndicator()
+                    }
+                }
+                is StatusUIDetail.Error -> {
+                    Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                        Text(text = "Gagal memuat data.")
+                    }
+                }
+                is StatusUIDetail.Success -> {
+                    // 1. Tampilan Card Data Siswa
+                    ItemDetailCard(
+                        siswa = uiState.siswa,
+                        modifier = Modifier.fillMaxWidth()
+                    )
+
+                    // 2. Tombol Hapus
+                    OutlinedButton(
+                        onClick = { deleteConfirmationRequired = true },
+                        modifier = Modifier.fillMaxWidth(),
+                        colors = ButtonDefaults.outlinedButtonColors(contentColor = Color.Red)
+                    ) {
+                        Text("Hapus")
+                    }
+
+                    // 3. Dialog Konfirmasi Hapus
+                    if (deleteConfirmationRequired) {
+                        DeleteConfirmationDialog(
+                            onDeleteConfirm = {
+                                deleteConfirmationRequired = false
+                                coroutineScope.launch {
+                                    viewModel.deleteSiswa()
+                                    navigateBack()
+                                }
+                            },
+                            onDeleteCancel = { deleteConfirmationRequired = false }
+                        )
+                    }
+                }
+            }
         }
     }
+}
+
+@Composable
+fun ItemDetailCard(
+    siswa: Siswa,
+    modifier: Modifier = Modifier
+) {
+    Card(
+        modifier = modifier,
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.2f)
+        )
+    ) {
+        Column(
+            modifier = Modifier.padding(16.dp),
+            verticalArrangement = Arrangement.spacedBy(12.dp)
+        ) {
+            ItemDetailRow(label = "Nama Siswa :", value = siswa.nama)
+            ItemDetailRow(label = "Alamat Siswa :", value = siswa.alamat)
+            ItemDetailRow(label = "Telpon Siswa :", value = siswa.telpon)
+        }
+    }
+}
+
+@Composable
+fun ItemDetailRow(label: String, value: String, modifier: Modifier = Modifier) {
+    Row(modifier = modifier.fillMaxWidth()) {
+        Text(text = label, fontWeight = FontWeight.Bold)
+        Spacer(modifier = Modifier.weight(1f))
+        Text(text = value, fontWeight = FontWeight.Bold)
+    }
+}
+
+@Composable
+private fun DeleteConfirmationDialog(
+    onDeleteConfirm: () -> Unit,
+    onDeleteCancel: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    AlertDialog(
+        onDismissRequest = { /* Do nothing */ },
+        title = { Text("Perhatian !") },
+        text = { Text("Apakah yakin akan menghapus ini ?") },
+        modifier = modifier,
+        dismissButton = {
+            TextButton(onClick = onDeleteCancel) {
+                Text(text = "Tidak")
+            }
+        },
+        confirmButton = {
+            TextButton(onClick = onDeleteConfirm) {
+                Text(text = "Ya")
+            }
+        }
+    )
 }
